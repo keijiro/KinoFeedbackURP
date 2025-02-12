@@ -6,13 +6,21 @@ using UnityEngine.Rendering.Universal;
 
 namespace Kino.Feedback.Universal {
 
+// Context data for sharing the feedback buffer between the passes
+sealed class FeedbackContextData : ContextItem
+{
+    public TextureHandle Buffer { get; set; }
+    public override void Reset() => Buffer = TextureHandle.nullHandle;
+}
+
+// Injection pass: Draws the content of the feedback buffer
 sealed class FeedbackInjectionPass : ScriptableRenderPass
 {
     class PassData
     {
         public Material Material;
         public FeedbackEffect Driver;
-        public TextureHandle Feedback;
+        public TextureHandle Buffer;
     }
 
     Material _material;
@@ -27,20 +35,25 @@ sealed class FeedbackInjectionPass : ScriptableRenderPass
         var camera = context.Get<UniversalCameraData>().camera;
         var driver = camera.GetComponent<FeedbackEffect>();
         if (driver == null || !driver.enabled || !driver.IsReady) return;
+        if (driver.Buffer == null) return; // First frame skip
 
         // Render pass building
-        using var builder = graph.
-          AddRasterRenderPass<PassData>("KinoFeedback (Injection)", out var data);
+        using var builder = graph.AddRasterRenderPass<PassData>
+          ("KinoFeedback (Injection)", out var data);
 
-        // Custom pass data
+        // Pass data setup
         data.Material = _material;
         data.Driver = driver;
-        data.Feedback = graph.ImportTexture(driver.Buffer);
+        data.Buffer = graph.ImportTexture(driver.Buffer);
+
+        // Context data for sharing the feedback buffer
+        var contextData = context.Create<FeedbackContextData>();
+        contextData.Buffer = data.Buffer;
 
         // Color/depth attachments
-        var resource = context.Get<UniversalResourceData>();
-        builder.SetRenderAttachment(resource.activeColorTexture, 0);
-        builder.SetRenderAttachmentDepth(resource.activeDepthTexture, AccessFlags.Read);
+        var resrc = context.Get<UniversalResourceData>();
+        builder.SetRenderAttachment(resrc.activeColorTexture, 0);
+        builder.SetRenderAttachmentDepth(resrc.activeDepthTexture, AccessFlags.Read);
 
         // Render function registration
         builder.SetRenderFunc<PassData>((data, ctx) => ExecutePass(data, ctx));
@@ -48,12 +61,12 @@ sealed class FeedbackInjectionPass : ScriptableRenderPass
 
     static void ExecutePass(PassData data, RasterGraphContext ctx)
     {
-        data.Material.SetTexture("_FeedbackTexture", data.Feedback);
+        data.Material.SetTexture("_FeedbackTexture", data.Buffer);
         CoreUtils.DrawFullScreen(ctx.cmd, data.Material, data.Driver.Properties, 1);
     }
 }
 
-// Feedback capture pass: Captures the frame buffer before post-processing
+// Capture pass: Captures the frame buffer before post-processing
 sealed class FeedbackCapturePass : ScriptableRenderPass
 {
     Material _material;
@@ -61,7 +74,8 @@ sealed class FeedbackCapturePass : ScriptableRenderPass
     public FeedbackCapturePass(Material material)
       => _material = material;
 
-    public override void RecordRenderGraph(RenderGraph graph, ContextContainer context)
+    public override void RecordRenderGraph
+      (RenderGraph graph, ContextContainer context)
     {
         // Not supported: Back buffer source
         var resource = context.Get<UniversalResourceData>();
@@ -72,20 +86,24 @@ sealed class FeedbackCapturePass : ScriptableRenderPass
         var driver = camera.GetComponent<FeedbackEffect>();
         if (driver == null || !driver.enabled || !driver.IsReady) return;
 
-        // Feedback buffer allocation
+        // Feedback source
         var source = resource.activeColorTexture;
-        var desc = graph.GetTextureDesc(source);
-        driver.PrepareBuffer(desc.width, desc.height);
 
-        //
-        var clear = new ImportResourceParams()
+        // Feedback buffer setup
+        TextureHandle buffer;
+        if (context.Contains<FeedbackContextData>())
         {
-            clearOnFirstUse = true,
-            clearColor = Color.black,
-            discardOnLastUse = false
-        };
-
-        var buffer = graph.ImportTexture(driver.Buffer, clear);
+            // Retrieval from the context data when it's available
+            var contextData = context.Get<FeedbackContextData>();
+            buffer = contextData.Buffer;
+        }
+        else
+        {
+            // New buffer allocation
+            var desc = graph.GetTextureDesc(source);
+            driver.PrepareBuffer(desc.width, desc.height);
+            buffer = graph.ImportTexture(driver.Buffer);
+        }
 
         // Blit
         var param = new RenderGraphUtils.
@@ -116,6 +134,7 @@ public sealed class FeedbackFeature : ScriptableRendererFeature
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData data)
     {
         if (data.cameraData.cameraType != CameraType.Game) return;
+
         renderer.EnqueuePass(_injection);
         renderer.EnqueuePass(_capture);
     }
