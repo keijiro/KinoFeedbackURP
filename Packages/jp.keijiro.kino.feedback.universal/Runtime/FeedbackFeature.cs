@@ -3,32 +3,16 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering.RenderGraphModule.Util;
 using UnityEngine.Rendering.Universal;
-using UnityEngine.Experimental.Rendering;
-using System;
 
 namespace Kino.Feedback.Universal {
 
-sealed class FeedbackCapturePass : ScriptableRenderPass, IDisposable
+// Feedback capture pass: Captures the frame buffer before post-processing
+sealed class FeedbackCapturePass : ScriptableRenderPass
 {
-    class PassData
-    {
-        public Material Material;
-        public FeedbackEffect Driver;
-    }
-
     Material _material;
-
-    public RTHandle Buffer { get; private set; }
-    public TextureHandle BufferHandle { get; private set; }
 
     public FeedbackCapturePass(Material material)
       => _material = material;
-
-    public void Dispose()
-    {
-        Buffer?.Release();
-        Buffer = null;
-    }
 
     public override void RecordRenderGraph(RenderGraph graph, ContextContainer context)
     {
@@ -41,17 +25,24 @@ sealed class FeedbackCapturePass : ScriptableRenderPass, IDisposable
         var driver = camera.GetComponent<FeedbackEffect>();
         if (driver == null || !driver.enabled || !driver.IsReady) return;
 
+        // Feedback buffer allocation
         var source = resource.activeColorTexture;
         var desc = graph.GetTextureDesc(source);
+        driver.PrepareBuffer(desc.width, desc.height);
 
-        if (Buffer == null)
-            Buffer = RTHandles.Alloc(desc.width, desc.height, GraphicsFormat.R8G8B8A8_SRGB);
+        //
+        var clear = new ImportResourceParams()
+        {
+        clearOnFirstUse = true,
+        clearColor = Color.black,
+        discardOnLastUse = false
+        };
 
-        BufferHandle = graph.ImportTexture(Buffer);
+        var buffer = graph.ImportTexture(driver.Buffer, clear);
 
         // Blit
         var param = new RenderGraphUtils.
-          BlitMaterialParameters(source, BufferHandle, _material, 0);
+          BlitMaterialParameters(source, buffer, _material, 0);
         graph.AddBlitPass(param, passName: "KinoFeedback (capture)");
     }
 }
@@ -66,10 +57,9 @@ sealed class FeedbackInjectionPass : ScriptableRenderPass
     }
 
     Material _material;
-    FeedbackCapturePass _capture;
 
-    public FeedbackInjectionPass(Material material, FeedbackCapturePass capture)
-      => (_material, _capture) = (material, capture);
+    public FeedbackInjectionPass(Material material)
+      => _material = material;
 
     public override void RecordRenderGraph
       (RenderGraph graph, ContextContainer context)
@@ -83,14 +73,10 @@ sealed class FeedbackInjectionPass : ScriptableRenderPass
         using var builder = graph.
           AddRasterRenderPass<PassData>("KinoFeedback (Injection)", out var data);
 
-        // Texture registration
-        //builder.UseTexture(_capture.BufferHandle);
-        var bufferHandle = graph.ImportTexture(_capture.Buffer);
-
         // Custom pass data
         data.Material = _material;
         data.Driver = driver;
-        data.Feedback = bufferHandle;
+        data.Feedback = graph.ImportTexture(driver.Buffer);
 
         // Color/depth attachments
         var resource = context.Get<UniversalResourceData>();
@@ -121,19 +107,10 @@ public sealed class FeedbackFeature : ScriptableRendererFeature
         _material = CoreUtils.CreateEngineMaterial(_shader);
 
         _capture = new FeedbackCapturePass(_material);
-        _injection = new FeedbackInjectionPass(_material, _capture);
+        _injection = new FeedbackInjectionPass(_material);
 
         _capture.renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;
         _injection.renderPassEvent = RenderPassEvent.AfterRenderingOpaques;
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            _capture.Dispose();
-            _capture = null;
-        }
     }
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData data)
