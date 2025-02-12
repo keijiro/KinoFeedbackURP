@@ -6,47 +6,6 @@ using UnityEngine.Rendering.Universal;
 
 namespace Kino.Feedback.Universal {
 
-// Feedback capture pass: Captures the frame buffer before post-processing
-sealed class FeedbackCapturePass : ScriptableRenderPass
-{
-    Material _material;
-
-    public FeedbackCapturePass(Material material)
-      => _material = material;
-
-    public override void RecordRenderGraph(RenderGraph graph, ContextContainer context)
-    {
-        // Not supported: Back buffer source
-        var resource = context.Get<UniversalResourceData>();
-        if (resource.isActiveTargetBackBuffer) return;
-
-        // Driver component retrieval
-        var camera = context.Get<UniversalCameraData>().camera;
-        var driver = camera.GetComponent<FeedbackEffect>();
-        if (driver == null || !driver.enabled || !driver.IsReady) return;
-
-        // Feedback buffer allocation
-        var source = resource.activeColorTexture;
-        var desc = graph.GetTextureDesc(source);
-        driver.PrepareBuffer(desc.width, desc.height);
-
-        //
-        var clear = new ImportResourceParams()
-        {
-        clearOnFirstUse = true,
-        clearColor = Color.black,
-        discardOnLastUse = false
-        };
-
-        var buffer = graph.ImportTexture(driver.Buffer, clear);
-
-        // Blit
-        var param = new RenderGraphUtils.
-          BlitMaterialParameters(source, buffer, _material, 0);
-        graph.AddBlitPass(param, passName: "KinoFeedback (capture)");
-    }
-}
-
 sealed class FeedbackInjectionPass : ScriptableRenderPass
 {
     class PassData
@@ -94,30 +53,71 @@ sealed class FeedbackInjectionPass : ScriptableRenderPass
     }
 }
 
+// Feedback capture pass: Captures the frame buffer before post-processing
+sealed class FeedbackCapturePass : ScriptableRenderPass
+{
+    Material _material;
+
+    public FeedbackCapturePass(Material material)
+      => _material = material;
+
+    public override void RecordRenderGraph(RenderGraph graph, ContextContainer context)
+    {
+        // Not supported: Back buffer source
+        var resource = context.Get<UniversalResourceData>();
+        if (resource.isActiveTargetBackBuffer) return;
+
+        // Driver component retrieval
+        var camera = context.Get<UniversalCameraData>().camera;
+        var driver = camera.GetComponent<FeedbackEffect>();
+        if (driver == null || !driver.enabled || !driver.IsReady) return;
+
+        // Feedback buffer allocation
+        var source = resource.activeColorTexture;
+        var desc = graph.GetTextureDesc(source);
+        driver.PrepareBuffer(desc.width, desc.height);
+
+        //
+        var clear = new ImportResourceParams()
+        {
+            clearOnFirstUse = true,
+            clearColor = Color.black,
+            discardOnLastUse = false
+        };
+
+        var buffer = graph.ImportTexture(driver.Buffer, clear);
+
+        // Blit
+        var param = new RenderGraphUtils.
+          BlitMaterialParameters(source, buffer, _material, 0);
+        graph.AddBlitPass(param, passName: "KinoFeedback (capture)");
+    }
+}
+
 public sealed class FeedbackFeature : ScriptableRendererFeature
 {
     [SerializeField, HideInInspector] Shader _shader = null;
 
     Material _material;
-    FeedbackCapturePass _capture;
     FeedbackInjectionPass _injection;
+    FeedbackCapturePass _capture;
 
     public override void Create()
     {
         _material = CoreUtils.CreateEngineMaterial(_shader);
 
-        _capture = new FeedbackCapturePass(_material);
         _injection = new FeedbackInjectionPass(_material);
+        _capture = new FeedbackCapturePass(_material);
 
-        _capture.renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;
         _injection.renderPassEvent = RenderPassEvent.AfterRenderingOpaques;
+        _capture.renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;
     }
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData data)
     {
         if (data.cameraData.cameraType != CameraType.Game) return;
-        renderer.EnqueuePass(_capture);
         renderer.EnqueuePass(_injection);
+        renderer.EnqueuePass(_capture);
     }
 }
 
