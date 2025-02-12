@@ -1,0 +1,11 @@
+{
+  "name": "jp.keijiro.kino.feedback.universal",
+  "displayName": "KinoFeedback (URP)",
+  "description": "Old school feedback video effect.",
+  "author": "Keijiro Takahashi",
+  "license": "Unlicense",
+  "dependencies": { },
+  "version": "1.0.0",
+  "unity": "6000.0",
+  "keywords": [ "unity" ]
+}
