@@ -728,6 +728,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1722a1d0f69cc40f3a526d900f52ce04, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  <Tint>k__BackingField: {r: 1, g: 1, b: 1, a: 1}
+  <HueShift>k__BackingField: 0
+  <Offset>k__BackingField: {x: 0, y: 0}
+  <Rotation>k__BackingField: 0
+  <Scale>k__BackingField: 1.1
 --- !u!1 &1602446955
 GameObject:
   m_ObjectHideFlags: 0

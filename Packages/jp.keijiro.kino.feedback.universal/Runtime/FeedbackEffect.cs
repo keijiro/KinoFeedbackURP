@@ -8,6 +8,25 @@ namespace Kino.Feedback.Universal {
 [AddComponentMenu("Kino/Feedback Effect")]
 public sealed class FeedbackEffect : MonoBehaviour
 {
+    #region Public properties (serialized)
+
+    [field:SerializeField, ColorUsage(false)]
+    public Color Tint { get; set; } = Color.white;
+
+    [field:SerializeField]
+    public float HueShift { get; set; }
+
+    [field:SerializeField]
+    public Vector2 Offset { get; set; }
+
+    [field:SerializeField]
+    public float Rotation { get; set; }
+
+    [field:SerializeField]
+    public float Scale { get; set; } = 1.1f;
+
+    #endregion
+
     #region Public members exposed for render passes
 
     public bool IsReady => Properties != null;
@@ -29,6 +48,12 @@ public sealed class FeedbackEffect : MonoBehaviour
 
     RTHandle _buffer;
 
+    Vector4 GetTransformVector()
+    {
+        var r = Mathf.Deg2Rad * Rotation;
+        return new Vector4(Mathf.Sin(r), Mathf.Cos(r), Offset.x, Offset.y) / Scale;
+    }
+
     #endregion
 
     #region MonoBehaviour implementation
@@ -39,9 +64,12 @@ public sealed class FeedbackEffect : MonoBehaviour
     void LateUpdate()
     {
         if (Properties == null) Properties = new MaterialPropertyBlock();
-        Properties.SetFloat("_Test", 1);
-        if (_buffer != null)
-            Properties.SetTexture("_FeedbackTexture", _buffer);
+
+        if (_buffer != null) Properties.SetTexture("_FeedbackTexture", _buffer);
+
+        Properties.SetVector("_Transform", GetTransformVector());
+        Properties.SetColor("_Tint", Tint);
+        Properties.SetFloat("_HueShift", HueShift);
     }
 
     #endregion
