@@ -54,11 +54,6 @@ sealed class FeedbackInjectionPass : ScriptableRenderPass
 // Copies the frame buffer into the feedback texture.
 sealed class FeedbackCapturePass : ScriptableRenderPass
 {
-    Material _material;
-
-    public FeedbackCapturePass(Material material)
-      => _material = material;
-
     public override void RecordRenderGraph
       (RenderGraph graph, ContextContainer context)
     {
@@ -76,12 +71,12 @@ sealed class FeedbackCapturePass : ScriptableRenderPass
 
         // Feedback texture setup
         var desc = graph.GetTextureDesc(source);
-        driver.PrepareBuffer(desc.width, desc.height);
+        driver.PrepareBuffer(desc.width, desc.height, desc.format);
         var buffer = graph.ImportTexture(driver.FeedbackTexture);
 
         // Blit
-        var param = new RenderGraphUtils.
-          BlitMaterialParameters(source, buffer, _material, 1);
+        var mat = Blitter.GetBlitMaterial(TextureDimension.Tex2D);
+        var param = new RenderGraphUtils.BlitMaterialParameters(source, buffer, mat, 0);
         graph.AddBlitPass(param, passName: "KinoFeedback (capture)");
     }
 }
@@ -99,7 +94,7 @@ public sealed class FeedbackFeature : ScriptableRendererFeature
         _material = CoreUtils.CreateEngineMaterial(_shader);
 
         _injection = new FeedbackInjectionPass(_material);
-        _capture = new FeedbackCapturePass(_material);
+        _capture = new FeedbackCapturePass();
 
         _injection.renderPassEvent = RenderPassEvent.AfterRenderingOpaques;
         _capture.renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;

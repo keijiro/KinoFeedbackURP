@@ -14,11 +14,10 @@ public sealed class FeedbackEffect : MonoBehaviour
 
     public MaterialPropertyBlock Properties { get; private set; }
 
-    public void PrepareBuffer(int width, int height)
+    public void PrepareBuffer(int width, int height, GraphicsFormat format)
     {
         if (_buffer == null)
-            _buffer = RTHandles.Alloc(width, height,
-                                      GraphicsFormat.R8G8B8A8_SRGB,
+            _buffer = RTHandles.Alloc(width, height, format,
                                       name: "KinoFeedback Buffer");
     }
 
