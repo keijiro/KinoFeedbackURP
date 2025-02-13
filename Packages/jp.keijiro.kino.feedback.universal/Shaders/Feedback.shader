@@ -7,16 +7,9 @@ HLSLINCLUDE
 
 TEXTURE2D(_FeedbackTexture);
 
-float4 _Transform;
+float4x4 _Transform;
 float4 _Tint;
 float _HueShift;
-
-float3x3 ConstructTransformMatrix()
-{
-    return float3x3(_Transform.y, -_Transform.x, _Transform.z,
-                    _Transform.x,  _Transform.y, _Transform.w,
-                               0,             0,            1);
-}
 
 float3 ApplyTint(float3 rgb)
 {
@@ -42,7 +35,7 @@ float4 FragInjection(float4 position : SV_Position,
     float2 uv = texCoord;
 
     // Feedback transform
-    uv = mul(ConstructTransformMatrix(), float3(uv - 0.5, 1)).xy + 0.5;
+    uv = mul(_Transform, float3(uv, 1)).xy;
 
     // Feedback sample
     float4 c = SAMPLE_TEXTURE2D(_FeedbackTexture, sampler_LinearClamp, uv);
