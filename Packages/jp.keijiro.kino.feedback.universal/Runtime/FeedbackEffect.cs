@@ -4,6 +4,7 @@ using UnityEngine.Experimental.Rendering;
 
 namespace Kino.Feedback.Universal {
 
+[ExecuteInEditMode]
 [RequireComponent(typeof(Camera))]
 [AddComponentMenu("Kino/Feedback Effect")]
 public sealed class FeedbackEffect : MonoBehaviour
