@@ -6,21 +6,14 @@ using UnityEngine.Rendering.Universal;
 
 namespace Kino.Feedback.Universal {
 
-// Context data for sharing the feedback buffer between the passes
-sealed class FeedbackContextData : ContextItem
-{
-    public TextureHandle Buffer { get; set; }
-    public override void Reset() => Buffer = TextureHandle.nullHandle;
-}
-
-// Injection pass: Draws the content of the feedback buffer
+// Injection pass (after opaque objects)
+// Draws a far-plane quad with the feedback texture.
 sealed class FeedbackInjectionPass : ScriptableRenderPass
 {
     class PassData
     {
-        public Material Material;
         public FeedbackEffect Driver;
-        public TextureHandle Buffer;
+        public Material Material;
     }
 
     Material _material;
@@ -35,20 +28,14 @@ sealed class FeedbackInjectionPass : ScriptableRenderPass
         var camera = context.Get<UniversalCameraData>().camera;
         var driver = camera.GetComponent<FeedbackEffect>();
         if (driver == null || !driver.enabled || !driver.IsReady) return;
-        if (driver.Buffer == null) return; // First frame skip
 
-        // Render pass building
+        // Raster render pass builder
         using var builder = graph.AddRasterRenderPass<PassData>
-          ("KinoFeedback (Injection)", out var data);
+          ("KinoFeedback (Injection)", out var passData);
 
         // Pass data setup
-        data.Material = _material;
-        data.Driver = driver;
-        data.Buffer = graph.ImportTexture(driver.Buffer);
-
-        // Context data for sharing the feedback buffer
-        var contextData = context.Create<FeedbackContextData>();
-        contextData.Buffer = data.Buffer;
+        passData.Driver = driver;
+        passData.Material = _material;
 
         // Color/depth attachments
         var resrc = context.Get<UniversalResourceData>();
@@ -59,14 +46,12 @@ sealed class FeedbackInjectionPass : ScriptableRenderPass
         builder.SetRenderFunc<PassData>((data, ctx) => ExecutePass(data, ctx));
     }
 
-    static void ExecutePass(PassData data, RasterGraphContext ctx)
-    {
-        data.Material.SetTexture("_FeedbackTexture", data.Buffer);
-        CoreUtils.DrawFullScreen(ctx.cmd, data.Material, data.Driver.Properties, 1);
-    }
+    static void ExecutePass(PassData data, RasterGraphContext context)
+      => CoreUtils.DrawFullScreen(context.cmd, data.Material, data.Driver.Properties, 0);
 }
 
-// Capture pass: Captures the frame buffer before post-processing
+// Capture pass (before post-processing)
+// Copies the frame buffer into the feedback texture.
 sealed class FeedbackCapturePass : ScriptableRenderPass
 {
     Material _material;
@@ -86,28 +71,17 @@ sealed class FeedbackCapturePass : ScriptableRenderPass
         var driver = camera.GetComponent<FeedbackEffect>();
         if (driver == null || !driver.enabled || !driver.IsReady) return;
 
-        // Feedback source
+        // Feedback source (camera texture)
         var source = resource.activeColorTexture;
 
-        // Feedback buffer setup
-        TextureHandle buffer;
-        if (context.Contains<FeedbackContextData>())
-        {
-            // Retrieval from the context data when it's available
-            var contextData = context.Get<FeedbackContextData>();
-            buffer = contextData.Buffer;
-        }
-        else
-        {
-            // New buffer allocation
-            var desc = graph.GetTextureDesc(source);
-            driver.PrepareBuffer(desc.width, desc.height);
-            buffer = graph.ImportTexture(driver.Buffer);
-        }
+        // Feedback texture setup
+        var desc = graph.GetTextureDesc(source);
+        driver.PrepareBuffer(desc.width, desc.height);
+        var buffer = graph.ImportTexture(driver.FeedbackTexture);
 
         // Blit
         var param = new RenderGraphUtils.
-          BlitMaterialParameters(source, buffer, _material, 0);
+          BlitMaterialParameters(source, buffer, _material, 1);
         graph.AddBlitPass(param, passName: "KinoFeedback (capture)");
     }
 }

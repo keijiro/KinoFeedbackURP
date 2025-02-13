@@ -7,11 +7,6 @@ HLSLINCLUDE
 
 TEXTURE2D(_FeedbackTexture);
 
-float4 FragCapture(float4 position : SV_Position) : SV_Target0
-{
-    return LOAD_TEXTURE2D(_BlitTexture, position.xy);
-}
-
 void VertInjection(uint vertexID : VERTEXID_SEMANTIC,
                    out float4 outPosition : SV_Position,
                    out float2 outTexCoord : TEXCOORD0)
@@ -29,19 +24,15 @@ float4 FragInjection(float4 position : SV_Position,
     return SAMPLE_TEXTURE2D(_FeedbackTexture, sampler_LinearClamp, uv);
 }
 
+float4 FragCapture(float4 position : SV_Position) : SV_Target0
+{
+    return LOAD_TEXTURE2D(_BlitTexture, position.xy);
+}
+
 ENDHLSL
 
     SubShader
     {
-        Pass
-        {
-            Name "KinoFeedback Capture"
-            ZTest Off ZWrite Off Cull Off Blend Off
-            HLSLPROGRAM
-            #pragma vertex Vert
-            #pragma fragment FragCapture
-            ENDHLSL
-        }
         Pass
         {
             Name "KinoFeedback Injection"
@@ -49,6 +40,15 @@ ENDHLSL
             HLSLPROGRAM
             #pragma vertex VertInjection
             #pragma fragment FragInjection
+            ENDHLSL
+        }
+        Pass
+        {
+            Name "KinoFeedback Capture"
+            ZTest Off ZWrite Off Cull Off Blend Off
+            HLSLPROGRAM
+            #pragma vertex Vert
+            #pragma fragment FragCapture
             ENDHLSL
         }
     }

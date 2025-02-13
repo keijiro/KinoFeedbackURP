@@ -22,7 +22,7 @@ public sealed class FeedbackEffect : MonoBehaviour
                                       name: "KinoFeedback Buffer");
     }
 
-    public RTHandle Buffer => _buffer;
+    public RTHandle FeedbackTexture => _buffer;
 
     #endregion
 
@@ -41,6 +41,8 @@ public sealed class FeedbackEffect : MonoBehaviour
     {
         if (Properties == null) Properties = new MaterialPropertyBlock();
         Properties.SetFloat("_Test", 1);
+        if (_buffer != null)
+            Properties.SetTexture("_FeedbackTexture", _buffer);
     }
 
     #endregion
