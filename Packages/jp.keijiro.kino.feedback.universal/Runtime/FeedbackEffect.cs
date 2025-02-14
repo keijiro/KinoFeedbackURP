@@ -17,13 +17,13 @@ public sealed class FeedbackEffect : MonoBehaviour
     [field:SerializeField, ColorUsage(false)]
     public Color Tint { get; set; } = Color.white;
 
-    [field:SerializeField]
+    [field:SerializeField, Range(-1, 1)]
     public float HueShift { get; set; }
 
     [field:SerializeField]
     public Vector2 Offset { get; set; }
 
-    [field:SerializeField]
+    [field:SerializeField, Range(-360, 360)]
     public float Rotation { get; set; }
 
     [field:SerializeField]
@@ -67,13 +67,13 @@ public sealed class FeedbackEffect : MonoBehaviour
 
     float4x4 CalculateTransformMatrix()
     {
-        var rad = math.radians(Rotation);
+        var rad = math.radians(-Rotation);
         var inv_scale = 1.0f / Scale;
 
         var a = GetComponent<Camera>().aspect;
         var s = math.sin(rad) * inv_scale;
         var c = math.cos(rad) * inv_scale;
-        var o = Offset * inv_scale;
+        var o = -Offset * inv_scale;
 
         var pre = Construct3x3(a, 0, -0.5f * a, 0, 1, -0.5f);
         var xform = Construct3x3(c, -s, o.x, s, c, o.y);
