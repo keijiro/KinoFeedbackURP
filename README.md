@@ -26,7 +26,7 @@ registry to your project, please follow [these instructions].
 [these instructions]:
   https://gist.github.com/keijiro/f8c7e8ff29bfe63d86b888901b82644c
 
-## SetUp
+## Setup
 
 1. Add the "Feedback Feature" to an active URP renderer. Refer to the
    [renderer feature] documentation for detailed steps.
