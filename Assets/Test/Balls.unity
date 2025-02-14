@@ -155,6 +155,7 @@ MonoBehaviour:
   <Offset>k__BackingField: {x: 0, y: 0}
   <Rotation>k__BackingField: 0.4
   <Scale>k__BackingField: 1.02
+  <SampleMode>k__BackingField: 1
 --- !u!114 &1490991158
 MonoBehaviour:
   m_ObjectHideFlags: 0

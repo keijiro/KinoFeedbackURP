@@ -150,11 +150,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1722a1d0f69cc40f3a526d900f52ce04, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <Tint>k__BackingField: {r: 1, g: 1, b: 1, a: 1}
-  <HueShift>k__BackingField: 0.04
+  <Tint>k__BackingField: {r: 0.9622642, g: 0.9622642, b: 0.9622642, a: 1}
+  <HueShift>k__BackingField: 0.02
   <Offset>k__BackingField: {x: 0, y: 0}
   <Rotation>k__BackingField: 0.7
   <Scale>k__BackingField: 1.02
+  <SampleMode>k__BackingField: 1
 --- !u!114 &1490991158
 MonoBehaviour:
   m_ObjectHideFlags: 0
