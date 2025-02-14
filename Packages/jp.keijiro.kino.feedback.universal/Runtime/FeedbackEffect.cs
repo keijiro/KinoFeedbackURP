@@ -5,6 +5,8 @@ using Unity.Mathematics;
 
 namespace Kino.Feedback.Universal {
 
+public enum SampleMode { Point, Bilinear };
+
 [ExecuteInEditMode]
 [RequireComponent(typeof(Camera))]
 [AddComponentMenu("Kino/Feedback Effect")]
@@ -26,6 +28,9 @@ public sealed class FeedbackEffect : MonoBehaviour
 
     [field:SerializeField]
     public float Scale { get; set; } = 1.1f;
+
+    [field:SerializeField]
+    public SampleMode SampleMode { get; set; } = SampleMode.Point;
 
     #endregion
 
@@ -98,6 +103,7 @@ public sealed class FeedbackEffect : MonoBehaviour
         Properties.SetMatrix("_Transform", CalculateTransformMatrix());
         Properties.SetColor("_Tint", Tint);
         Properties.SetFloat("_HueShift", HueShift);
+        Properties.SetFloat("_SampleMode", (int)SampleMode);
     }
 
     #endregion

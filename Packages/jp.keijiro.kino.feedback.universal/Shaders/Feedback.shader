@@ -10,6 +10,7 @@ TEXTURE2D(_FeedbackTexture);
 float4x4 _Transform;
 float4 _Tint;
 float _HueShift;
+float _SampleMode;
 
 float3 ApplyTint(float3 rgb)
 {
@@ -37,8 +38,10 @@ float4 FragInjection(float4 position : SV_Position,
     // Feedback transform
     uv = mul(_Transform, float3(uv, 1)).xy;
 
-    // Feedback sample
-    float4 c = SAMPLE_TEXTURE2D(_FeedbackTexture, sampler_LinearClamp, uv);
+    // Feedback sample (point/bilinear)
+    float4 s0 = SAMPLE_TEXTURE2D(_FeedbackTexture, sampler_PointClamp, uv);
+    float4 s1 = SAMPLE_TEXTURE2D(_FeedbackTexture, sampler_LinearClamp, uv);
+    float4 c = lerp(s0, s1, _SampleMode);
 
     // Composition
     c.rgb = ApplyTint(c.rgb);
