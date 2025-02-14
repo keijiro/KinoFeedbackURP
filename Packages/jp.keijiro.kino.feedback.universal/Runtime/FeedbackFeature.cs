@@ -28,6 +28,7 @@ sealed class FeedbackInjectionPass : ScriptableRenderPass
         var camera = context.Get<UniversalCameraData>().camera;
         var driver = camera.GetComponent<FeedbackEffect>();
         if (driver == null || !driver.enabled || !driver.IsReady) return;
+        if (driver.FeedbackTexture == null) return; // First frame rejection
 
         // Raster render pass builder
         using var builder = graph.AddRasterRenderPass<PassData>
