@@ -6,7 +6,7 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Main.unity
-    guid: ff5702dfe30c34fa2a680f20ba104712
+    path: Assets/Test/Balls.unity
+    guid: 3d739a5f8412e42bf91e8847ec94ade2
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0

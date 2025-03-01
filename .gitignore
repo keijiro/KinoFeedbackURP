@@ -9,3 +9,9 @@ Desktop.ini
 /Temp
 /UIElementsSchema
 /UserSettings
+
+/.utmp
+/mono_crash.*.json
+/Xcode
+/*.apk
+/*_DoNotShip
