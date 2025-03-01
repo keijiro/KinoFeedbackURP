@@ -38,7 +38,7 @@ void VertInjection(uint vertexID : VERTEXID_SEMANTIC,
 float4 FragInjection(float4 position : SV_Position,
                      float2 texCoord : TEXCOORD) : SV_Target0
 {
-    float2 uv = mul(_Transform, float3(texCoord, 1)).xy;
+    float2 uv = mul((float3x3)_Transform, float3(texCoord, 1)).xy;
     float4 s0 = SAMPLE_TEXTURE2D(_FeedbackTexture, sampler_PointClamp, uv);
     float4 s1 = SAMPLE_TEXTURE2D(_FeedbackTexture, sampler_LinearClamp, uv);
     float4 c = lerp(s0, s1, _SampleMode);
