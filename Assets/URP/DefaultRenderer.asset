@@ -10,10 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bb974c4ec13434429a706285f202877b, type: 3}
-  m_Name: FeedbackFeature
+  m_Name: FeedbackRendererFeature
   m_EditorClassIdentifier: 
   m_Active: 1
-  _shader: {fileID: 4800000, guid: 254f19bceb1da4b7d9c8edb95bd9f8f9, type: 3}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -43,7 +42,10 @@ MonoBehaviour:
   m_RendererFeatureMap: bbbc72e8b9a35f9c
   m_UseNativeRenderPass: 0
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
-  m_AssetVersion: 2
+  m_AssetVersion: 3
+  m_PrepassLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
   m_OpaqueLayerMask:
     serializedVersion: 2
     m_Bits: 4294967295

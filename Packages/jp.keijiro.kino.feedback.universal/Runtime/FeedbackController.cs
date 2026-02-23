@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Experimental.Rendering;
 using Unity.Mathematics;
+using ShaderIDs = Kino.Feedback.Universal.ShaderPropertyIDs;
 
 namespace Kino.Feedback.Universal {
 
@@ -9,8 +10,8 @@ public enum SampleMode { Point, Bilinear };
 
 [ExecuteInEditMode]
 [RequireComponent(typeof(Camera))]
-[AddComponentMenu("Kino/Feedback Effect")]
-public sealed class FeedbackEffect : MonoBehaviour
+[AddComponentMenu("Kino/Feedback Controller")]
+public sealed class FeedbackController : MonoBehaviour
 {
     #region Public properties (serialized)
 
@@ -111,12 +112,12 @@ public sealed class FeedbackEffect : MonoBehaviour
     {
         if (Properties == null) Properties = new MaterialPropertyBlock();
 
-        if (_buffer != null) Properties.SetTexture("_FeedbackTexture", _buffer);
+        if (_buffer != null) Properties.SetTexture(ShaderIDs.FeedbackTexture, _buffer);
 
-        Properties.SetMatrix("_Transform", CalculateTransformMatrix());
-        Properties.SetColor("_Tint", Tint);
-        Properties.SetFloat("_HueShift", HueShift);
-        Properties.SetFloat("_SampleMode", (int)SampleMode);
+        Properties.SetMatrix(ShaderIDs.Transform, CalculateTransformMatrix());
+        Properties.SetColor(ShaderIDs.Tint, Tint);
+        Properties.SetFloat(ShaderIDs.HueShift, HueShift);
+        Properties.SetFloat(ShaderIDs.SampleMode, (int)SampleMode);
     }
 
     #endregion

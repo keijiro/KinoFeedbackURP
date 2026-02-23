@@ -28,10 +28,10 @@ registry to your project, please follow [these instructions].
 
 ## SetUp
 
-1. Add the "Feedback Feature" to an active URP renderer. Refer to the
+1. Add the "Feedback Renderer Feature" to an active URP renderer. Refer to the
    [renderer feature] documentation for detailed steps.
 
-2. Add the "Feedback Effect" component to an active camera in a scene. The
+2. Add the "Feedback Controller" component to an active camera in a scene. The
    feedback effect is only applied to cameras that have this component.
 
 ## Design Notes
