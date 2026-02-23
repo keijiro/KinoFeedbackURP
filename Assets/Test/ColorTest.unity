@@ -270,6 +270,7 @@ MonoBehaviour:
   <Rotation>k__BackingField: 0
   <Scale>k__BackingField: 1
   <SampleMode>k__BackingField: 0
+  _shader: {fileID: 4800000, guid: 254f19bceb1da4b7d9c8edb95bd9f8f9, type: 3}
 --- !u!114 &1490991158
 MonoBehaviour:
   m_ObjectHideFlags: 0

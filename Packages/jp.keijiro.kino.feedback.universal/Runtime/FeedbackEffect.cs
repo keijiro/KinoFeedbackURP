@@ -32,6 +32,8 @@ public sealed class FeedbackEffect : MonoBehaviour
     [field:SerializeField]
     public SampleMode SampleMode { get; set; } = SampleMode.Point;
 
+    [SerializeField, HideInInspector] Shader _shader = null;
+
     #endregion
 
     #region Public members exposed for render passes
@@ -39,6 +41,13 @@ public sealed class FeedbackEffect : MonoBehaviour
     public bool IsReady => Properties != null;
 
     public MaterialPropertyBlock Properties { get; private set; }
+
+    public Material UpdateMaterial()
+    {
+        if (_material == null)
+            _material = CoreUtils.CreateEngineMaterial(_shader);
+        return _material;
+    }
 
     public void PrepareBuffer(int width, int height, GraphicsFormat format)
     {
@@ -54,6 +63,7 @@ public sealed class FeedbackEffect : MonoBehaviour
     #region Private members
 
     RTHandle _buffer;
+    Material _material;
 
     float3x3 Construct3x3(float m00, float m01, float m02,
                           float m10, float m11, float m12)
@@ -90,6 +100,9 @@ public sealed class FeedbackEffect : MonoBehaviour
 
     void OnDestroy()
     {
+        CoreUtils.Destroy(_material);
+        _material = null;
+
         _buffer?.Release();
         _buffer = null;
     }

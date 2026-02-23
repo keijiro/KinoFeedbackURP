@@ -16,11 +16,6 @@ sealed class FeedbackInjectionPass : ScriptableRenderPass
         public Material Material;
     }
 
-    Material _material;
-
-    public FeedbackInjectionPass(Material material)
-      => _material = material;
-
     public override void RecordRenderGraph
       (RenderGraph graph, ContextContainer context)
     {
@@ -36,7 +31,7 @@ sealed class FeedbackInjectionPass : ScriptableRenderPass
 
         // Pass data setup
         passData.Driver = driver;
-        passData.Material = _material;
+        passData.Material = driver.UpdateMaterial();
 
         // Color/depth attachments
         var resrc = context.Get<UniversalResourceData>();
@@ -84,17 +79,12 @@ sealed class FeedbackCapturePass : ScriptableRenderPass
 
 public sealed class FeedbackFeature : ScriptableRendererFeature
 {
-    [SerializeField, HideInInspector] Shader _shader = null;
-
-    Material _material;
     FeedbackInjectionPass _injection;
     FeedbackCapturePass _capture;
 
     public override void Create()
     {
-        _material = CoreUtils.CreateEngineMaterial(_shader);
-
-        _injection = new FeedbackInjectionPass(_material);
+        _injection = new FeedbackInjectionPass();
         _capture = new FeedbackCapturePass();
 
         _injection.renderPassEvent = RenderPassEvent.AfterRenderingOpaques;
