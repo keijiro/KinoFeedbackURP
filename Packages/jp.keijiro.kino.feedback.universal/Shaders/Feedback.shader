@@ -5,13 +5,13 @@ HLSLINCLUDE
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 #include "Packages/com.unity.render-pipelines.core/Runtime/Utilities/Blit.hlsl"
 
-TEXTURE2D(_FeedbackTexture);
+TEXTURE2D_X(_FeedbackTexture);
 float4x4 _Transform;
 float4 _Tint;
 float _HueShift;
 float _SampleMode;
 
-float3 ModifyColor(float3 rgb)
+half3 ModifyColor(half3 rgb)
 {
     #ifndef UNITY_COLORSPACE_GAMMA
     rgb = LinearToSRGB(rgb);
@@ -35,20 +35,21 @@ void VertInjection(uint vertexID : VERTEXID_SEMANTIC,
     outTexCoord = GetFullScreenTriangleTexCoord(vertexID);
 }
 
-float4 FragInjection(float4 position : SV_Position,
-                     float2 texCoord : TEXCOORD) : SV_Target0
+half4 FragInjection(float4 position : SV_Position,
+                    float2 texCoord : TEXCOORD) : SV_Target0
 {
     float2 uv = mul((float3x3)_Transform, float3(texCoord, 1)).xy;
-    float4 s0 = SAMPLE_TEXTURE2D(_FeedbackTexture, sampler_PointClamp, uv);
-    float4 s1 = SAMPLE_TEXTURE2D(_FeedbackTexture, sampler_LinearClamp, uv);
-    float4 c = lerp(s0, s1, _SampleMode);
-    return float4(ModifyColor(c.rgb), c.a);
+    half4 s0 = SAMPLE_TEXTURE2D_X(_FeedbackTexture, sampler_PointClamp, uv);
+    half4 s1 = SAMPLE_TEXTURE2D_X(_FeedbackTexture, sampler_LinearClamp, uv);
+    half4 c = lerp(s0, s1, _SampleMode);
+    return half4(ModifyColor(c.rgb), c.a);
 }
 
 ENDHLSL
 
     SubShader
     {
+        Tags { "RenderPipeline"="UniversalPipeline" "RenderType"="Opaque" }
         Pass
         {
             Name "KinoFeedback Injection"
