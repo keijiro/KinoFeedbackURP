@@ -12,7 +12,7 @@ effects for Unity's [Universal Render Pipeline] as a custom [renderer feature].
 [renderer feature]:
   https://docs.unity3d.com/6000.0/Documentation/Manual/urp/urp-renderer-feature.html
 
-## System Requirements
+## System requirements
 
 - Unity 6.0 or newer
 - Universal Render Pipeline
@@ -28,18 +28,20 @@ registry to your project, please follow [these instructions].
 
 ## Setup
 
-1. Add the "Feedback Feature" to an active URP renderer. Refer to the
+1. Add the "Feedback Renderer Feature" to an active URP renderer. Refer to the
    [renderer feature] documentation for detailed steps.
 
-2. Add the "Feedback Effect" component to an active camera in a scene. The
+2. Add the "Feedback Controller" component to an active camera in a scene. The
    feedback effect is only applied to cameras that have this component.
 
-## Design Notes
+You can configure the render pass event for each pass with the
+`Injection Pass Event` and `Capture Pass Event` properties on the renderer
+feature.
+
+## Design notes
 
 - The feedback effect injects the previous frame's image by rendering a
   full-screen quad at the camera's far plane.
-- The frame capture occurs just before the post-processing passes, meaning
-  post-processing effects do not influence the feedback effect.
 - As with any video feedback effect, the result heavily depends on the frame
   rate. Be aware that changes in frame rate will affect the appearance of the
   effect.
