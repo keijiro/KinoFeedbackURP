@@ -1,6 +1,6 @@
 {
   "name": "jp.keijiro.kino.feedback.universal",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "displayName": "KinoFeedback (URP)",
   "description": "Old school video feedback effect.",
   "unity": "6000.0",
@@ -10,5 +10,5 @@
   "documentationUrl": "https://github.com/keijiro/KinoFeedbackURP",
   "licensesUrl": "https://github.com/keijiro/KinoFeedbackURP/blob/master/LICENSE",
   "license": "Unlicense",
-  "_upm": { "changelog": "" }
+  "_upm": { "changelog": "<b>Added</b><br>- Added package signing support.<br><br><b>Changed</b><br>- Renamed core components to FeedbackController and FeedbackRendererFeature.<br>- Made injection and capture pass events configurable in the renderer feature." }
 }

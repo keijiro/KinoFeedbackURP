@@ -5,18 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [1.0.1] - 2025-02-14
-
-### Fixed
-
-- Added missing `.meta` files required for package distribution.
-
-### Changed
-
-- Updated the package version metadata for the 1.0.1 bug-fix release.
-
-## [1.0.0] - 2025-02-14
+## [2.0.0] - 2026-02-24
 
 ### Added
 
-- Initial release of KinoFeedback URP.
+- Added package signing support.
+
+### Changed
+
+- Renamed core components to `FeedbackController` and
+  `FeedbackRendererFeature`.
+- Made injection and capture pass events configurable in the renderer feature.
