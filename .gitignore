@@ -14,4 +14,5 @@ Desktop.ini
 /mono_crash.*.json
 /Xcode
 /*.apk
+/*.tgz
 /*_DoNotShip
