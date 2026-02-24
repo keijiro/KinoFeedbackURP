@@ -34,6 +34,10 @@ registry to your project, please follow [these instructions].
 2. Add the "Feedback Controller" component to an active camera in a scene. The
    feedback effect is only applied to cameras that have this component.
 
+You can configure the render pass event for each pass with the
+`Injection Pass Event` and `Capture Pass Event` properties on the renderer
+feature.
+
 ## Design Notes
 
 - The feedback effect injects the previous frame's image by rendering a

@@ -6,6 +6,12 @@ namespace Kino.Feedback.Universal {
 
 public sealed class FeedbackRendererFeature : ScriptableRendererFeature
 {
+    [SerializeField] RenderPassEvent _injectionPassEvent =
+      RenderPassEvent.AfterRenderingOpaques;
+
+    [SerializeField] RenderPassEvent _capturePassEvent =
+      RenderPassEvent.BeforeRenderingPostProcessing;
+
     FeedbackInjectionPass _injection;
     FeedbackCapturePass _capture;
 
@@ -14,8 +20,8 @@ public sealed class FeedbackRendererFeature : ScriptableRendererFeature
         _injection = new FeedbackInjectionPass();
         _capture = new FeedbackCapturePass();
 
-        _injection.renderPassEvent = RenderPassEvent.AfterRenderingOpaques;
-        _capture.renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;
+        _injection.renderPassEvent = _injectionPassEvent;
+        _capture.renderPassEvent = _capturePassEvent;
     }
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData data)
